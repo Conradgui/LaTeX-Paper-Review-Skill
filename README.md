@@ -37,14 +37,15 @@
 
 ## 它适合检查什么
 
-- **全文结构预审**：检查题目、摘要、引言、相关工作、方法、结果、讨论、结论之间是否连贯。
-- **研究问题与方法对齐**：检查研究设计、模型、实验、证明或综述框架是否能回答研究问题。
+- **结构化论文建模**：审阅前先自动梳理并构建 Research Question Map、Construct / Variable / Parameter Map、Relationship Map 和 Method Fit Assessment 四维画像，奠定逻辑校对基础。
+- **证据链审核 (Evidence Chain Review)**：自查 `Claim` → `Evidence` → `Figure/Table` → `Method` → `Citation` → `Appendix` 链条，仅在链条断裂或矛盾时在报告中输出相关链路。
+- **严重性与确定性分级**：审阅意见使用 **Critical**（致命）、**Major**（重要）、**Minor**（次要）、**Suggestions**（写作建议）划分严重程度，并结合“确定错误/证据不足/疑似问题/需核对”标记其确定性（Certainty）。
+- **防防泛化审阅契约 (Anti-Generic Rules)**：禁止输出无具体定位、无事实支撑、无修改建议的泛泛而谈（如“增强创新性”）。若未发现问题，直接输出“未发现明显问题”。
 - **变量与概念一致性**：检查变量定义、构念、符号、术语、下标、单位和假设条件是否前后一致。
-- **证据链条检查**：检查主张是否由数据、图表、实验、推导、引用或附录支持。
 - **图表与正文对齐**：检查表格、图注、实验结果和正文解释是否互相支撑。
 - **附录与正文对齐**：检查附录推导、证明、算法、稳健性检验或数据处理过程是否支撑正文。
-- **Unsupported claims 扫描**：找出缺少数据、文献、图表或实验结果支持的判断。
-- **审阅报告生成**：输出可追踪、可修改的 Markdown 审阅报告，方便作者逐条处理。
+- **Unsupported claims 扫描**：找出缺少数据、文献、图表 or 实验结果支持的判断。
+- **审阅报告生成**：输出可追踪、可修改的简体中文 Markdown 审阅报告，方便作者逐条处理。
 
 ## 它和普通 AI 润色有什么区别
 
@@ -103,16 +104,16 @@ Use $latex-paper-review to review this LaTeX manuscript and write a concise LaTe
 
 通用版 `$paper-review` 支持：
 
-- Markdown
-- DOCX
-- PDF
-- LaTeX 源码
-- 纯文本
+- Markdown (.md)
+- Word (.docx)
+- PDF (.pdf)
+- LaTeX 源码 (.tex)
+- 纯文本 (.txt)
 - 多文件项目或论文材料包
 
 输入越完整，审阅越可靠。对于多文件论文，建议提供正文、附录、图表说明、参考文献、补充材料和相关说明。若只提供 PDF，Skill 仍可审阅可见内容，但对源码结构、隐藏批注、交叉引用、宏定义和编译问题的判断会受到限制。
 
-对于 DOCX，Skill 会以内容审阅为主；如需保留批注、修订痕迹或 Word 样式，需要另行使用文档编辑工具或明确提出该需求。
+**注意**：对于 DOCX，Skill 与内置的 Proofing 脚本支持深度文本提取（包括正文、页眉、页脚、脚注与尾注）。然而，DOCX 文本提取主要用于轻量级文本和 Proofing 扫描，它无法完整保留文档中的批注、修订痕迹、文本框、复杂表格结构以及高级 Word 样式。
 
 ## 外部资料检索策略
 
@@ -153,18 +154,25 @@ paper-reviews/review-YYYY-MM-DD-HHMMSS.md
 scripts/proofing_scan.py
 ```
 
-它用于扫描一些高置信、低成本但容易遗漏的问题，例如：
+它用于扫描一些高置信、低成本但容易遗漏的问题，原生支持 **PDF (.pdf)**、**Word (.docx)**、**Markdown (.md)**、**LaTeX (.tex)** 及 **TXT (.txt)** 文件。它可以扫描出：
 
 - 重复标点：`, ,`、`,,`、`..`
 - 引号附近的异常标点
 - `javascript`、`ios`、`iphone` 等大小写问题
-- `arctan(x/y)` 这类可能存在象限或分支歧义的表达
+- `arctan(x/y)` 这类可能存在象限或分支歧义的表达（建议使用 `atan2` 或明确定义分支）
 - 推导文字中常见的异常表达模式
 
 示例：
 
 ```bash
+# 扫描 PDF 文件
 python3 paper-review/scripts/proofing_scan.py path/to/manuscript.pdf --max-hits 80
+
+# 扫描 Word 文件 (自动解析正文/页眉/页脚/脚注/尾注)
+python3 paper-review/scripts/proofing_scan.py path/to/manuscript.docx
+
+# 扫描 Markdown 文件
+python3 paper-review/scripts/proofing_scan.py path/to/manuscript.md
 ```
 
 脚本输出只是候选线索，仍需要人工或 AI spot-check 后再写入审阅意见。

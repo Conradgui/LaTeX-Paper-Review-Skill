@@ -14,7 +14,7 @@ Produce one concrete, compileable LaTeX review file. Prioritize scientific and t
 1. Read the full manuscript before writing findings.
 2. Use extra thinking by default, but do not narrate the reasoning process.
 3. Write a standalone LaTeX review to `paper-reviews/review-YYYY-MM-DD-HHMMSS.tex`, unless the user gives a different path.
-4. Match the user's requested output language; otherwise use the user's language when clear.
+4. Match the user's requested output language; default to Simplified Chinese (简体中文) unless specified otherwise.
 5. Preserve equations, symbols, citation keys, and quoted manuscript snippets exactly when needed for technical accuracy.
 6. Do not require a fixed review template or section layout unless the user asks for one.
 7. Create a new timestamped review file by default. Only update an existing review file if the user explicitly asks.
@@ -33,13 +33,19 @@ Do not let editorial findings crowd out technical findings. Treat `proofread`, `
 ## Workflow
 
 1. Read the manuscript to understand the main claims, evidence, equations, appendices, and structure.
-2. Identify the highest-risk technical content: key equations, symbol definitions, quantitative claims, coordinate transformations, appendix formulas, and implementation-facing expressions.
-3. Perform the technical audit first.
-4. Re-check the highest-risk technical findings before presenting them.
-5. Perform a bounded editorial pass after the technical audit.
-6. Run `scripts/proofing_scan.py` when code execution is available; otherwise do the manual pattern scan in `Final Proofing Sweep`.
-7. Spot-check proofing-scan candidates before presenting them as issues.
-8. Write the review file.
+2. Build a structured internal map of the manuscript:
+   - **Research Question Map**: Identify core research questions, primary claims, and intended contributions.
+   - **Construct / Variable / Parameter Map**: Identify independent/dependent variables, mathematical parameters, system components, or theoretical constructs (relevant to the paper type).
+   - **Relationship Map**: Identify hypothesized directions, logical dependencies, mathematical relationships, or system interactions.
+   - **Method Fit Assessment**: Evaluate whether the selected research design or proof strategy logically answers the research questions, and whether conclusion boundaries match the evidence.
+3. Trace the Evidence Chain for identified claims: Check the path `Claim` -> `Evidence` -> `Figure/Table` -> `Method` -> `Citation` -> `Appendix` (if applicable) for inconsistencies, missing links, or overreaching assertions.
+4. Identify the highest-risk technical content: key equations, symbol definitions, quantitative claims, coordinate transformations, appendix formulas, and implementation-facing expressions.
+5. Perform the technical audit, checking specific methodological validity dimensions (such as `selection bias`, `endogeneity`, `validity`, and `boundary conditions` where applicable).
+6. Re-check the findings and classify them by severity and certainty before presenting.
+7. Perform a bounded editorial pass after the technical audit.
+8. Run `scripts/proofing_scan.py` when code execution is available; otherwise do the manual pattern scan in `Final Proofing Sweep`.
+9. Spot-check proofing-scan candidates before presenting them as issues.
+10. Write the review file.
 
 For long papers, inspect sections in chunks when helpful, but do not force a ritual that does not improve the review.
 
@@ -71,16 +77,36 @@ For frequently used symbols, especially subscripted or superscripted angles, rad
 
 Flag conflicts where the same symbol is described with inconsistent role or temporal adjectives, such as initial/final, source/observer, or emission/reception.
 
-### Confidence Labels
+### Severity And Certainty Classification
 
-Label technical judgments clearly:
+For each finding, you must determine both its severity and certainty:
 
-- **Definite error:** contradicted by the manuscript itself or by straightforward math, logic, or internal evidence.
-- **Unsupported claim:** stated more strongly than the manuscript supports.
-- **Likely issue:** plausibly wrong or misleading, but not fully provable from the manuscript alone.
-- **Needs external verification:** depends on outside literature or facts not established in the manuscript.
+#### Severity Levels
+- **Critical Issues**: Factual, logical, or methodological issues that threaten the primary validity of the manuscript (e.g., unsupported core claims, missing identification strategy, undefined key variables, contradictory results).
+- **Major Issues**: Significant problems that weaken confidence in the findings (e.g., measurement ambiguity, incomplete methodological justification, weak evidence chain).
+- **Minor Issues**: Localized errors that affect clarity, consistency, or readability (e.g., terminology inconsistency, local figure-text mismatches, formatting problems).
+- **Writing Suggestions**: Non-essential suggestions to improve flow, grammar, or phrasing.
 
-Do not present verification-needed items as definite errors.
+#### Certainty Labels
+- **确定错误 (Definite Error)**: Contradicted directly by the manuscript's own contents, math, or established logic.
+- **证据不足 (Unsupported Claim)**: Stated more strongly than the manuscript's data or references justify.
+- **疑似问题 (Likely Issue)**: Highly probable issue that requires authors' attention but cannot be proven definitively from the text alone.
+- **需核对/确认 (Requires Verification)**: Depends on external literature or context outside the manuscript.
+
+## External Research Policy
+
+Do not perform external web or literature searches by default. Only perform searches when explicitly authorized by the user, when a finding cannot be assessed without external knowledge, or when the manuscript explicitly requests fact validation.
+
+When searching, protect manuscript privacy by using anonymized queries (do not upload the title, author names, or sensitive draft text).
+
+### Source Credibility Hierarchy
+- **Tier 1 (Authoritative)**: Original cited papers, peer-reviewed journals/conferences (e.g., ACM/IEEE, Nature, MISQ, AER), official standards, standard textbooks, official documentation, academic databases (OpenAlex, PubMed, arXiv).
+- **Tier 2 (Supporting)**: University lecture notes, technical manuals, high-quality reviews, preprints.
+- **Tier 3 (Non-authoritative)**: General forums (StackOverflow, Reddit), commercial/marketing blogs, AI summaries without sources.
+*Rule: Tier 3 sources may only serve as search leads or prompts to check further, but MUST NEVER be cited as academic evidence, consensus, or proof of error.*
+
+### Cross-Validation Rule
+When a review conclusion depends on external academic consensus, cross-check multiple authoritative (Tier 1/2) sources whenever feasible. If evidence remains uncertain, label the issue as "requires verification" rather than asserting that the manuscript is incorrect.
 
 ## Coverage Requirement
 
@@ -126,23 +152,27 @@ Before finishing, check bibliography/reference hygiene and dense derivation pros
 ## Output Contract
 
 Write LaTeX only in the review file. Use minimal standalone scaffolding that can compile.
+Generate the default report in Simplified Chinese (简体中文) unless the user requests another language.
 
-Cover:
+### Anti-Generic Feedback Rules
+You must NOT output low-value, vague suggestions (e.g., "增强创新性", "扩展文献", "提升贡献") that lack precise local facts or actionable advice.
+If no concrete issues are identified, output "未发现明显问题" directly. Do not invent minor issues just to fill space.
 
-- overall assessment of manuscript quality
-- most important technical findings
-- meaningful editorial findings
-- a short proofing-sweep subsection when there are obvious high-confidence copyediting defects worth fixing
-- highest-priority fixes
-- items that need external verification
+### Finding Format
+For every identified finding, you MUST include:
+1. **Location** (e.g., section number, page, line number, or equation/figure label).
+2. **Problem** (factual explanation of the issue).
+3. **Why it matters** (impact on manuscript validity or readability).
+4. **Suggested revision** (concrete, actionable remedy).
+5. **Severity** (Critical, Major, Minor, or Writing Suggestion).
+6. **Certainty** (确定错误, 证据不足, 疑似问题, or 需核对/确认).
+*Note: Only output the Evidence Chain trace path if an issue or discrepancy in the chain is found.*
 
-For each technical finding, include location, problem, why it matters, and suggested fix.
-
-For each editorial finding, include location, problem, why it matters, suggested fix, and an optional candidate rewrite.
-
-For proofing-sweep items, a compact bullet list is acceptable if each bullet includes location, problem, and suggested fix.
-
-Put technical and factual issues before prose issues unless the user explicitly asks for a prose-first review.
+Default report structure:
+- Overall assessment of manuscript quality (整体评估)
+- Detailed findings grouped by **Severity** (from Critical down to Minor/Suggestions)
+- High-priority fixes (高优先级修改建议)
+- Items needing external verification (需核对/确认事项)
 
 ## Useful Reference
 

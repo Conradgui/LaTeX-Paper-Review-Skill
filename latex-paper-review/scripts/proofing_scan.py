@@ -30,6 +30,29 @@ def _read_text_as_single_page(path: Path) -> list[str]:
     return [re.sub(r"\s+", " ", text).strip()]
 
 
+def _read_docx_as_single_page(path: Path) -> list[str]:
+    import zipfile
+    import xml.etree.ElementTree as ET
+    try:
+        with zipfile.ZipFile(path) as docx:
+            xml_files = [f for f in docx.namelist() if f.startswith('word/') and f.endswith('.xml')]
+            target_files = [f for f in xml_files if any(p in f for p in ['document', 'header', 'footer', 'footnote', 'endnote'])]
+            texts = []
+            for xml_file in target_files:
+                try:
+                    xml_content = docx.read(xml_file)
+                    root = ET.fromstring(xml_content)
+                    for elem in root.iter():
+                        if elem.tag.endswith('}t') and elem.text:
+                            texts.append(elem.text)
+                except Exception:
+                    continue
+            full_text = " ".join(texts)
+            return [re.sub(r"\s+", " ", full_text).strip()]
+    except Exception as exc:
+        raise SystemExit(f"Failed to read DOCX file: {exc}")
+
+
 def _snip(text: str, start: int, end: int, window: int = 60) -> str:
     lo = max(0, start - window)
     hi = min(len(text), end + window)
@@ -63,7 +86,13 @@ def main() -> None:
     if not path.exists():
         raise SystemExit(f"File not found: {path}")
 
-    pages = _read_pdf_pages(path) if path.suffix.lower() == ".pdf" else _read_text_as_single_page(path)
+    suffix = path.suffix.lower()
+    if suffix == ".pdf":
+        pages = _read_pdf_pages(path)
+    elif suffix == ".docx":
+        pages = _read_docx_as_single_page(path)
+    else:
+        pages = _read_text_as_single_page(path)
 
     rules: list[tuple[str, re.Pattern[str]]] = [
         ("PUNC_DOUBLE_COMMA", re.compile(r",\s*,")),
