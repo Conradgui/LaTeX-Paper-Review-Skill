@@ -26,7 +26,7 @@ Upgrade the repository from a LaTeX-only paper review skill into a broader acade
 
 ## Execution Evidence
 
-- Created and pushed the `latex-paper-review` branch from the original LaTeX-only commit.
+- Created and pushed the `latex-paper-review` branch, then fast-forwarded it to the latest LaTeX-only README snapshot from `origin/main`.
 - Copied the original LaTeX skill package to `latex-paper-review/`.
 - Updated `latex-paper-review/SKILL.md` frontmatter to `name: latex-paper-review`.
 - Rewrote `paper-review/SKILL.md` as a general academic manuscript review skill covering Markdown, DOCX, PDF, LaTeX, and plain text.
