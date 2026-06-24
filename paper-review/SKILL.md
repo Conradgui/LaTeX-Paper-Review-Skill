@@ -42,16 +42,65 @@ Before formulating any review findings, build a structured internal map covering
 
 Use this map to test whether the paper's claims, method, evidence, and wording align. Do not output this model in the final report unless it directly exposes an issue.
 
+## Core Manuscript Audit Protocol
+
+Every manuscript must receive a transparent core audit before optional type-specific checks. Apply these checks across manuscript types without forcing empirical-paper concepts onto non-empirical work:
+
+1. **Research question audit:** identify the main question, contribution, and whether the paper's structure keeps returning to that question.
+2. **Core concept / variable / symbol / construct audit:** identify the key units of analysis for this manuscript type and check whether they are defined, used consistently, and operational enough for readers to follow.
+3. **Claim-evidence chain audit:** test whether each important claim is supported by the paper's method, data, figures, tables, derivations, citations, appendices, or explicit assumptions.
+4. **Method-question fit audit:** check whether the selected method, model, experiment, proof, system evaluation, or review framework can answer the research question.
+5. **Structural coherence audit:** check whether title, abstract, introduction, related work, method, results, discussion, conclusion, and appendices form a coherent path.
+6. **Support-material audit:** check whether figures, tables, appendices, references, formulas, and supplementary material support rather than contradict the main text.
+7. **Conclusion boundary audit:** check whether conclusion strength, limitations, causal wording, and practical implications match the actual evidence.
+8. **Actionability audit:** convert the most important findings into the action plan table defined in `Output Contract`.
+
+Interpret "variables" broadly:
+
+- empirical papers: variables, indicators, controls, mediators, moderators
+- theoretical papers: concepts, propositions, assumptions, definitions
+- mathematical papers: symbols, parameters, functions, theorem conditions
+- systems papers: modules, inputs/outputs, metrics, baselines
+- review papers: taxonomy dimensions, concept boundaries, literature streams
+
 ## Review Workflow
 
 1. Identify manuscript type: empirical, theoretical/mathematical, systems/technical, review/conceptual, or mixed.
 2. Build the manuscript understanding model.
-3. Trace the Evidence Chain for identified claims: Check the path `Claim` -> `Evidence` -> `Figure/Table` -> `Method` -> `Citation` -> `Appendix` (if applicable) for inconsistencies, missing links, or overreaching assertions.
-4. Audit the highest-risk content first: research question, method, variables/symbols, evidence, results, equations, figures/tables, appendices, and citations.
-5. Re-check the findings and classify them by severity and certainty before presenting.
-6. Run `scripts/proofing_scan.py` when code execution is available and the input is PDF, DOCX, Markdown, or text-like; otherwise do the manual proofing scan below.
-7. Perform a bounded editorial pass after the technical and evidence audit.
-8. Write the review report with findings structured by severity, prioritizing technical/factual issues.
+3. Apply the Core Manuscript Audit Protocol.
+4. Trace the Evidence Chain for identified claims: Check the path `Claim` -> `Evidence` -> `Figure/Table` -> `Method` -> `Citation` -> `Appendix` (if applicable) for inconsistencies, missing links, or overreaching assertions.
+5. If the manuscript has empirical-research features, read `references/empirical-paper-audit.md` and apply it as an enhancement module, not as a replacement for the core audit.
+6. Read `references/claim-strength-calibration.md` when the manuscript contains causal, significance, robustness, novelty, policy, or contribution claims whose wording may be stronger than the evidence.
+7. Audit the highest-risk content first: research question, method, variables/symbols, evidence, results, equations, figures/tables, appendices, and citations.
+8. Re-check the findings and classify them by severity and certainty before presenting.
+9. Run `scripts/proofing_scan.py` when code execution is available and the input is PDF, DOCX, Markdown, or text-like; otherwise do the manual proofing scan below.
+10. Perform a bounded editorial pass after the technical and evidence audit.
+11. Write the review report with findings structured by severity, prioritizing technical/factual issues.
+
+## Recheck / Delta Review
+
+Use this mode when the user asks to recheck, review a revised draft, compare against a prior review, verify whether issues were fixed, or provides an earlier review file.
+
+In recheck mode:
+
+1. Read the prior review and the current manuscript materials.
+2. Map prior findings to their current manuscript locations, accounting for section or wording changes.
+3. Classify each prior finding as:
+   - **Resolved:** the issue is fixed.
+   - **Still Open:** the issue remains materially unchanged.
+   - **Downgraded:** the issue remains but has been narrowed, qualified, or partially addressed.
+   - **Upgraded:** the issue became more serious or now affects a higher-priority claim.
+   - **New:** a newly introduced or newly discovered issue.
+   - **Needs External Verification:** the status depends on data, literature, code, or context not available in the manuscript.
+4. Do not simply repeat the old review. Focus on status changes, remaining blockers, and new issues.
+5. Include next action for each still-open, downgraded, upgraded, new, or verification-needed item.
+
+Use a compact status matrix when helpful:
+
+```markdown
+| 原问题 | 当前位置 | 状态 | 下一步动作 |
+|---|---|---|---|
+```
 
 ## Review Lenses
 
@@ -87,6 +136,8 @@ Always check for:
 - mismatch between definitions, formulas, appendix material, and implementation-facing expressions
 - missing assumptions, qualifiers, limitations, or uncertainty that materially affect interpretation
 - citation/reference mismatch or citation used to support a claim it does not actually establish
+
+When a finding concerns claim strength, use `references/claim-strength-calibration.md` to propose a calibrated rewrite instead of merely saying the claim is "too strong."
 
 ## Severity And Certainty Classification
 
@@ -168,3 +219,19 @@ Default Markdown report structure:
 - Detailed findings grouped by **Severity** (from Critical down to Minor/Suggestions)
 - High-priority fixes (高优先级修改建议)
 - Items needing external verification (需核对/确认事项)
+- Action plan table (修改行动表)
+
+### Action Plan Table
+
+End the report with a concise action plan table when concrete fixes exist. Do not force rows when there are no actionable issues.
+
+```markdown
+| 优先级 | 问题 | 修改类型 | 建议修改位置 | 是否阻塞提交 |
+|---|---|---|---|---|
+```
+
+Use:
+
+- **优先级:** `P0`, `P1`, or `P2`
+- **修改类型:** `主张强度校准`, `变量定义补充`, `表文一致性`, `方法说明补充`, `文献支撑补充`, `结构调整`, `表达澄清`, `格式/引用修正`, or `需外部核查`
+- **是否阻塞提交:** `是`, `否`, or `取决于要求`

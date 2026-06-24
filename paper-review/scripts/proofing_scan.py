@@ -66,11 +66,16 @@ def _find_regex(
     max_hits: int,
 ) -> list[tuple[str, int, str]]:
     hits: list[tuple[str, int, str]] = []
+    seen: set[tuple[str, int, str]] = set()
     for page_number, page_text in enumerate(pages, start=1):
         if not page_text:
             continue
         for match in pattern.finditer(page_text):
-            hits.append((rule_id, page_number, _snip(page_text, match.start(), match.end())))
+            hit = (rule_id, page_number, _snip(page_text, match.start(), match.end()))
+            if hit in seen:
+                continue
+            seen.add(hit)
+            hits.append(hit)
             if len(hits) >= max_hits:
                 return hits
     return hits
@@ -78,7 +83,7 @@ def _find_regex(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str, help="PDF or text file")
+    parser.add_argument("path", type=str, help="PDF, DOCX, or text file")
     parser.add_argument("--max-hits", type=int, default=80, help="Cap total hits across all rules")
     args = parser.parse_args()
 
@@ -105,6 +110,10 @@ def main() -> None:
         ("CAP_IOS", re.compile(r"\bios\b")),
         ("CAP_IPHONE", re.compile(r"\biphone\b")),
         ("ARCTAN_DIV", re.compile(r"\barctan\s*\(\s*[^()]{0,40}?/[^()]{0,40}?\)", re.IGNORECASE)),
+        ("ZH_OVERCLAIM_CAUSAL", re.compile(r"证明|导致|决定性影响")),
+        ("ZH_OVERCLAIM_STABILITY", re.compile(r"完全支持|高度稳健|稳定提升")),
+        ("ZH_OVERCLAIM_SCOPE", re.compile(r"全面提升|整体优化|显著改善所有")),
+        ("ZH_MIXED_EVIDENCE_LANGUAGE", re.compile(r"显著正相关.{0,120}边界证据|边界证据.{0,120}显著正相关")),
     ]
 
     remaining = args.max_hits
